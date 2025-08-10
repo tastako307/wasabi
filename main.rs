@@ -153,7 +153,7 @@ fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
         let _ = draw_line(&mut vram, 0xff00ff,cx,cy, rect_size, i);
         let _ = draw_line(&mut vram, 0xffffff,cx, cy, i, rect_size); 
     }
-    let font_a= "
+        let font_a = "
     ........
     ...**...
     ...**...
@@ -171,6 +171,12 @@ fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     ........
     ........
     ";
+
+
+    for (i,c) in "ABCDEF".chars().enumerate(){
+        draw_font_fg(&mut vram,i as i64* 16 +256,i as i64 *16, 0xffffff, c)
+    }
+
     for (y,row) in font_a.trim().split('\n').enumerate(){
         for (x,pixel) in row.chars().enumerate(){
             let color= match pixel{
@@ -185,6 +191,7 @@ fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
         hlt()
     }
 }
+
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
@@ -351,4 +358,36 @@ fn draw_line<T: Bitmap>(
 
         }
         Ok(())
+}
+
+fn draw_font_fg<T: Bitmap>(buf: &mut T, x:i64, y:i64, color: u32,c:char){
+    if let Ok(_c) = u8::try_from(c){
+        let font_a = "
+........
+...**...
+...**...
+...**...
+...**...
+..*..*..
+..*..*..
+..*..*..
+..*..*..
+.******.
+.*....*.
+.*....*.
+.*....*.
+***..***
+........
+........
+";
+        for (dy,row) in font_a.trim().split('\n').enumerate(){
+            for (dx,pixel)in row.chars().enumerate() {
+                let color =match pixel{
+                '*' => color,
+                _ => continue,
+                };
+                let _ = draw_point(buf,color,x+dx as i64, y +dy as i64);
+            }
+        } 
+    }
 }
